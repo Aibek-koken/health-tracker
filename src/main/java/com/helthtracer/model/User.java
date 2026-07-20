@@ -1,5 +1,6 @@
 package com.helthtracer.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 @Entity
@@ -53,6 +54,9 @@ public class User {
         this.email = email;
     }
 
+    // Never serialize the (hashed) password back into an API response, but
+    // still allow it to be bound from an incoming request body (signup/register).
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() {
         return password;
     }

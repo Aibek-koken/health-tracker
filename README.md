@@ -90,6 +90,18 @@ helth-tracer/
 4. **Access the application**
    Open your browser and navigate to `http://localhost:8080`
 
+### Migration note: password hashing
+
+Passwords are now hashed with BCrypt (`spring-boot-starter-security`,
+`PasswordEncoder`) instead of being stored and compared as plain text.
+This is a breaking change for any existing `users` row created before this
+change: its `password` column holds a raw string, not a BCrypt hash, so
+`passwordEncoder.matches(...)` will never match it and that account can no
+longer log in. There is no migration path for those old values (a plain-text
+password can't be turned into its own hash after the fact) — affected users
+need to re-register, or the `users` table needs to be cleared in any
+environment that only ever held test data.
+
 ### Docker Deployment
 
 1. **Build the Docker image**
