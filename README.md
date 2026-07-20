@@ -1,142 +1,80 @@
-# Health Tracer
+# Health Tracker
 
-A comprehensive health and habit tracking application built with Spring Boot and Jakarta EE that helps users monitor their daily habits, health metrics, and wellness journey.
+A habit- and health-tracking web application built with Spring Boot. Users track
+daily habits, log completions, record basic health data, and share short posts
+with likes and comments. The frontend is served as static pages from the
+backend.
 
----
+> **Status:** Auth is limited to password hashing; endpoint authorization is not
+> implemented — this is a learning project. See [Security](#security).
 
-## 📋 Overview
+## Features
 
-Health Tracer is a web-based application designed to help users:
-- Track daily habits and health routines
-- Monitor health statistics and progress
-- Share experiences through posts and social features
-- Build a community around health and wellness goals
+- **Habits** — create habits and log daily completion to build consistency.
+- **Habit logs** — record and review completion history per habit.
+- **Health stats** — per-user statistics, including sleep sessions.
+- **Social feed** — publish posts (with tags), like them, and comment.
+- **Accounts** — registration and login with BCrypt-hashed passwords.
 
----
+## Tech stack
 
-## 🚀 Features
+- Java 17, Spring Boot (Spring MVC)
+- Spring Data JPA
+- Spring Security — used only for the BCrypt `PasswordEncoder` (see Security)
+- Static HTML/CSS/JS frontend served from `src/main/resources/static`
+- Maven
+- Docker support; Heroku-ready `Procfile`
 
-### Core Functionality
-- **Habit Tracking**: Create, monitor, and maintain daily habits
-- **Health Statistics**: Track various health metrics and view progress over time
-- **Social Features**: Share posts, like content, and engage with the community
-- **User Management**: Complete user authentication and profile management
-- **Habit Logging**: Detailed logging of habit completion and consistency
+## Security
 
-### API Endpoints
-- User authentication and authorization
-- Habit creation and management
-- Health statistics tracking
-- Social posting and interaction features
-- Comprehensive habit logging system
+This is a learning project and its security posture is intentionally minimal and
+clearly bounded:
 
----
+- Passwords are hashed with BCrypt via Spring Security's `PasswordEncoder`. Login
+  verifies with `passwordEncoder.matches(...)`; signup and user creation hash
+  before saving. Password hashes are never returned in API responses.
+- **Authorization is not implemented.** `SecurityConfig` permits all requests
+  (`anyRequest().permitAll()`); the Spring Security dependency is present only to
+  provide a working password encoder without locking down every endpoint by
+  default. There is no session, token, or per-endpoint access control.
 
-## 🛠️ Technology Stack
-
-- **Backend Framework**: Spring Boot with Spring MVC
-- **Database**: Spring Data JPA for data persistence
-- **Java Version**: Java 25
-- **Enterprise Features**: Jakarta EE integration
-- **Build Tool**: Maven
-- **Containerization**: Docker support
-- **Deployment**: Heroku-ready with Procfile
-
----
-
-## 📁 Project Structure
-
-```
-helth-tracer/
-├── src/main/java/com/helthtracer/
-│   ├── config/          # Application configuration
-│   ├── controller/      # REST API controllers
-│   ├── model/           # Entity models and data structures
-│   ├── repository/      # Data access layer
-│   └── HealthTracerApplication.java
-├── src/main/resources/  # Application properties and resources
-├── .github/workflows/   # CI/CD pipeline configuration
-├── Dockerfile           # Container configuration
-└── pom.xml              # Maven dependencies
-```
-
----
-
-## 🏃‍♂️ Getting Started
-
-### Prerequisites
-- Java 25 or higher
-- Maven 3.6+
-- Docker (optional, for containerization)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd helth-tracer
-   ```
-
-2. **Build the project**
-   ```bash
-   ./mvnw clean install
-   ```
-
-3. **Run the application**
-   ```bash
-   ./mvnw spring-boot:run
-   ```
-
-4. **Access the application**
-   Open your browser and navigate to `http://localhost:8080`
+Do not treat this as a secured application.
 
 ### Migration note: password hashing
 
-Passwords are now hashed with BCrypt (`spring-boot-starter-security`,
-`PasswordEncoder`) instead of being stored and compared as plain text.
-This is a breaking change for any existing `users` row created before this
+Passwords are now hashed with BCrypt instead of being stored and compared as
+plain text. This is a breaking change for any `users` row created before the
 change: its `password` column holds a raw string, not a BCrypt hash, so
-`passwordEncoder.matches(...)` will never match it and that account can no
-longer log in. There is no migration path for those old values (a plain-text
-password can't be turned into its own hash after the fact) — affected users
-need to re-register, or the `users` table needs to be cleared in any
-environment that only ever held test data.
+`passwordEncoder.matches(...)` will never match and that account can no longer
+log in. There is no migration path for those old values — affected users must
+re-register, or the `users` table must be cleared in environments that only ever
+held test data.
 
-### Docker Deployment
+## Getting started
 
-1. **Build the Docker image**
-   ```bash
-   docker build -t health-tracer .
-   ```
+Requirements: Java 17, Maven 3.6+ (Docker optional).
 
-2. **Run the container**
-   ```bash
-   docker run -p 8080:8080 health-tracer
-   ```
+```bash
+./mvnw clean install
+./mvnw spring-boot:run
+```
 
----
+Open `http://localhost:8080`.
 
-## 🎯 Why Use Health Tracer?
+### Docker
 
-### For Individuals
-- **Habit Formation**: Build and maintain healthy daily routines
-- **Progress Tracking**: Visualize your health journey with detailed statistics
-- **Motivation**: Stay motivated through social features and community support
-- **Comprehensive Logging**: Keep detailed records of your health activities
+```bash
+docker build -t health-tracker .
+docker run -p 8080:8080 health-tracker
+```
 
-### For Developers
-- **Modern Tech Stack**: Built with latest Java and Spring Boot features
-- **Scalable Architecture**: Clean separation of concerns with MVC pattern
-- **API-First Design**: RESTful APIs for easy integration
-- **Container Ready**: Docker support for easy deployment
-- **CI/CD Ready**: GitHub Actions workflow included
+## Project structure
 
-### For Organizations
-- **Employee Wellness**: Deploy as an internal wellness platform
-- **Customizable**: Extensible architecture for specific requirements
-- **Secure**: Built with Spring Security best practices
-- **Cloud Ready**: Heroku deployment configuration included
-
----
-
-**Start your health journey today with Health Tracer!** 🌟
+```
+src/main/java/com/helthtracer/
+  config/        SecurityConfig (BCrypt encoder) and configuration
+  controller/    auth, habits, habit logs, posts, comments, likes, stats, users
+  model/         Habit, HabitLog, Post, Comment, Like, Tag, SleepSession, User
+  repository/    Spring Data JPA repositories
+src/main/resources/static/   landing, login, signup, main, analytics, profile
+```
